@@ -1,0 +1,26 @@
+(library
+ (name otoggl_test)
+ (libraries alcotest alcotest-lwt otoggl.lib)
+ (modules
+  (:standard \ test_runner)))
+
+(executable
+ (name test_runner)
+ (libraries base alcotest otoggl_test)
+ (modules test_runner))
+
+(rule
+ (alias runtest)
+ (deps
+  (:m test_runner.exe))
+ (action
+  (run %{m} -q --color=always)))
+
+(rule
+ (alias runtest-slow)
+ (deps
+  (:m test_runner.exe))
+ (action
+  (run %{m} --color=always)))
+
+(include_subdirs unqualified)

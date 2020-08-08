@@ -1,0 +1,48 @@
+{
+  "name": "otoggl",
+  "esy": {
+    "build": "dune build -p #{self.name}",
+    "buildDev": "dune build --root . --only-package #{self.name}",
+    "install": "esy-installer #{self.target_dir / 'default' / self.name '.install'}",
+    "buildEnv": {
+      "ODOC_SYNTAX": "ml"
+    }
+  },
+  "dependencies": {
+    "@opam/base": "*",
+    "@opam/dune": ">= 2.0",
+    "@opam/containers": "*",
+    "@reason-native-web/piaf": "*",
+    "@opam/base64": "*",
+    "@opam/atdgen-runtime": "*",
+    "@opam/lwt": "*",
+    "@opam/ptime": "*",
+    "ocaml": ">= 4.8.0"
+  },
+  "devDependencies": {
+    "@esy-ocaml/reason": "*",
+    "@jsdevtools/version-bump-prompt": "*",
+    "@opam/atdgen": "*",
+    "@opam/alcotest": "*",
+    "@opam/alcotest-lwt": "*",
+    "@opam/dune-release": "*",
+    "@opam/merlin": "*",
+    "@opam/ocamlformat": "*",
+    "@opam/odoc": "*",
+    "@opam/utop": "*",
+    "@opam/ppx_deriving": "*"
+  },
+  "scripts": {
+    "test": "esy dune build @test/runtest -f",
+    "test-slow": "esy dune build @test/runtest-slow -f",
+    "doc": "esy dune build @doc",
+    "doc-path": "esy echo #{self.target_dir}/default/_doc/_html/index.html",
+    "format": "esy dune build @fmt --auto-promote",
+    "watch": "esy dune build -p #{self.name} --watch",
+    "utop": "esy dune utop lib -- -implicit-bindings",
+    "release": "./script/release.sh",
+    "bump-patch": "bump patch --commit \"Release v\" --tag \"v\" package.json README.md",
+    "bump-minor": "bump minor --commit \"Release v\" --tag \"v\" package.json README.md",
+    "bump-major": "bump major --commit \"Release v\" --tag \"v\" package.json README.md"
+  }
+}

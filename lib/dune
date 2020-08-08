@@ -1,0 +1,26 @@
+(library
+ ; The namespace that other packages/libraries will access this library through
+ (name Otoggl)
+ ; Other libraries list this name in their package.json 'require' field to use this library.
+ (public_name otoggl.lib)
+ (libraries piaf containers base64 atdgen-runtime ptime ptime.clock.os)
+ (preprocess
+  (staged_pps ppx_deriving.show ppx_deriving.eq)))
+
+(rule
+ (targets toggl_j.ml toggl_j.mli)
+ (deps toggl.atd)
+ (action
+  (run atdgen -j toggl.atd)))
+
+(rule
+ (targets toggl_t.ml toggl_t.mli)
+ (deps toggl.atd)
+ (action
+  (run atdgen -t -deriving-conv show,eq toggl.atd)))
+
+(rule
+ (targets toggl_v.ml toggl_v.mli)
+ (deps toggl.atd)
+ (action
+  (run atdgen -v toggl.atd)))

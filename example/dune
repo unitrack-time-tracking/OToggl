@@ -1,0 +1,4 @@
+(executables
+ (names simple)
+ (modules (:standard))
+ (libraries base otoggl.lib))

@@ -1,0 +1,99 @@
+<doc text="Helper types">
+type tid = int
+type wid = int
+type pid = int
+type uid = int
+type datetime = string wrap <ocaml t="Ptime.t" unwrap="Ptime.to_rfc3339" wrap="fun s -> Ptime.of_rfc3339 s |> CCResult.get_exn |> function (t, _, _) -> t">
+
+<doc text="Response types">
+
+type time_entry = {
+  id: tid;
+  wid: wid;
+  uid: uid;
+  description: string;
+  at: datetime;
+  ?pid: pid option;
+  start: datetime;
+  ?stop: datetime option;
+  duration: int;
+  ~tags: string list;
+  ~duronly: bool;
+  ~billable: bool
+}
+<doc text="Represents a time enty as will be returned from the Toggl API">
+
+type workspace = {
+  id: wid;
+  name: string;
+  default_currency: string;
+  at: datetime;
+  ~premium: bool;
+  ~admin: bool;
+  ~default_hourly_rate: float;
+  ~only_admins_may_create_projects: bool;
+  ~only_admins_see_billable_rates: bool;
+  ~only_admins_see_team_dashboard: bool;
+  ~projects_billable_by_default: bool;
+  ~rounding: int;
+  ~rounding_minutes: int;
+  ~ical_enabled: bool;
+  ?api_token: string option;
+  ?profile: int option;
+  ?logo_url: string option
+}
+<doc text="Represents a workspace in Toggl">
+
+type project = {
+  id: pid;
+  wid: wid;
+  name: string;
+  at: datetime;
+  created_at: datetime;
+  ~billable: bool;
+  ~is_private: bool;
+  ~active: bool;
+  ~auto_estimates: bool;
+  ~estimated_hours: bool;
+  ~actual_hours: int;
+  ~template: bool;
+  ?template_id: int option;
+  ?color: string option;
+  ?hex_color: string option
+}
+<doc text="Represents a project in Toggl">
+
+type workspace_list = workspace list
+type project_list = project list
+type time_entry_list = time_entry list
+type data_time_entry = {data: time_entry}
+
+<doc text="Request types">
+
+type time_entry_request = {
+  description: string;
+  ?wid: int option;
+  ?pid: int option;
+  ?start: datetime option;
+  ?stop: datetime nullable option;
+  ~duration: int;
+  created_with: string;
+  ~tags: string list;
+  ~duronly: bool;
+  ~billable: bool
+} <json keep_nulls> <doc text="Represents a time entry as we send to Toggl when starting or creating one">
+
+type time_entry_update_request = {
+  ?description: string option;
+  ?wid: int option;
+  ?pid: int nullable option;
+  ?start: datetime option;
+  ?stop: datetime nullable option;
+  ?duration: int option;
+  ?tags: string list option;
+  ?duronly: bool option;
+  ?billable: bool option
+} <json keep_nulls> <doc text="Represents a time entry as we send to Toggl when updating one">
+
+type wrapped_time_entry = {time_entry: time_entry_request}
+type wrapped_time_entry_update_request = {time_entry: time_entry_update_request}
