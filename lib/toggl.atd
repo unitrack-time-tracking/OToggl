@@ -65,7 +65,9 @@ type project = {
 
 type workspace_list = workspace list
 type project_list = project list
+type pid_list = pid list
 type time_entry_list = time_entry list
+type tid_list = tid list
 type data_time_entry = {data: time_entry}
 type data_project = {data: project}
 

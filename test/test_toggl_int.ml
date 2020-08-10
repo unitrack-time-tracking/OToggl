@@ -1,6 +1,6 @@
 open Lwt
 open Lwt.Syntax
-open Otoggl.Toggl
+open Toggl
 
 (* Create the authenticated client using the token in environment *)
 let username = Sys.getenv "toggl_token"
@@ -8,22 +8,26 @@ let username = Sys.getenv "toggl_token"
 let password = "api_token"
 
 let run_name =
-  Sys.getenv_opt "GITHUB_RUN_ID" |> CCOpt.get_or ~default:"Test run"
+  Random.self_init ();
+  let run_id =
+    Sys.getenv_opt "GITHUB_RUN_ID" |> CCOpt.get_or ~default:"Test run"
+  in
+  let workflow = Sys.getenv_opt "GITHUB_WORKFLOW" |> CCOpt.get_or ~default:"" in
+  workflow ^ run_id ^ Int.to_string @@ Random.int 1_000_000_000
 
-module Client = Otoggl.Toggl.Client (struct
+module Client = Auth.Client (struct
   let auth = Auth.Basic { username; password }
 end)
 
-open Api (Client)
+open Api.F (Client)
 
 let get_or_failwith = function Ok x -> x | Error e -> failwith e
 
-let client =
-  Client.create @@ Uri.of_string "https://api.toggl.com" >|= get_or_failwith
+let client = create_client () >|= get_or_failwith
 
 (* Utility functions for writing tests *)
 let wait value =
-  let* _ = Lwt_unix.sleep 1. in
+  let* _ = Lwt_unix.sleep 2. in
   return value
 
 let get_workspace _switch =
@@ -33,8 +37,12 @@ let get_workspace _switch =
   >|= List.filter (fun ({ name; _ } : Types.workspace) -> name = "Personal")
   >|= List.hd
 
-let delete_run_project _switch ({ id; _ } : Types.project) =
-  client >>= Project.delete id >|= get_or_failwith >|= wait
+let delete_run_project _switch ({ id; name; _ } : Types.project) =
+  print_string @@ "Deleting project " ^ Int.to_string id ^ " : " ^ name ^ "\n";
+  client >>= Project.delete id >|= get_or_failwith >>= wait >|= fun pids ->
+  Alcotest.(check (list int) "Same project deleted" [ id ] pids);
+  print_string @@ "Deleted project " ^ Types.string_of_pid_list pids ^ "\n";
+  pids
 
 let create_run_project
     switch
@@ -73,17 +81,18 @@ let create_run_project
     client >>= Project.create project_request >|= get_or_failwith >>= wait
   in
   Lwt_switch.add_hook (Some switch) (fun () ->
-      print_string "Deleting project\n";
-      let promise = project >>= delete_run_project switch >|= ignore in
-      print_string "Project deleted\n";
-      promise);
+      project >>= delete_run_project switch >|= ignore);
   project
 
 let get_project _switch ({ id; _ } : Types.workspace) =
   client >>= Project.list id >|= get_or_failwith >|= List.hd
 
-let delete_time_entry _switch (time_entry : Types.time_entry) =
-  client >>= TimeEntry.delete time_entry.id >>= wait
+let delete_time_entry _switch ({ id; _ } : Types.time_entry) =
+  print_string @@ "Deleting time entry " ^ Int.to_string id ^ "\n";
+  client >>= TimeEntry.delete id >|= get_or_failwith >>= wait >|= fun tids ->
+  Alcotest.(check (list int) "Same time entry deleted" [ id ] tids);
+  print_string @@ "Deleted time entry " ^ Types.string_of_tid_list tids ^ "\n";
+  tids
 
 let create_time_entry
     ~pid
@@ -99,7 +108,7 @@ let create_time_entry
   let time_entry =
     client
     >>= TimeEntry.create
-          (Types.create_time_entry
+          (Types.create_time_entry_request
              ~pid
              ~description
              ?tags
@@ -116,14 +125,16 @@ let create_time_entry
       time_entry >>= delete_time_entry switch >|= ignore);
   time_entry
 
-let stop_time_entry _switch (time_entry : Types.time_entry) =
-  client >>= TimeEntry.stop time_entry.id >|= get_or_failwith >>= wait
+let stop_time_entry _switch ({ id; _ } : Types.time_entry) =
+  client >>= TimeEntry.stop id >|= get_or_failwith >>= wait >|= fun te ->
+  print_string @@ "Stopped time entry " ^ Int.to_string te.id ^ "\n";
+  te
 
 let start_time_entry switch ({ id; wid; _ } : Types.project) =
   let time_entry =
     client
     >>= TimeEntry.start
-          (Types.create_time_entry
+          (Types.create_time_entry_request
              ~wid
              ~pid:id
              ~description:"Test time entry"
@@ -132,10 +143,7 @@ let start_time_entry switch ({ id; wid; _ } : Types.project) =
     >>= wait
   in
   Lwt_switch.add_hook (Some switch) (fun () ->
-      print_string "Deleting time entry\n";
-      let promise = time_entry >>= delete_time_entry switch >|= ignore in
-      print_string "Deleted time entry\n";
-      promise);
+      time_entry >>= delete_time_entry switch >|= ignore);
   time_entry
 
 let get_time_entry _switch (time_entry : Types.time_entry) =

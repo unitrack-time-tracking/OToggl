@@ -163,6 +163,6 @@ let delete
   ignore (headers, body);
   match path with
   | "/api/v8/time_entries/436694100" ->
-    Lwt_result.return (Response.of_string `OK ~body:"")
+    Lwt_result.return (Response.of_string `OK ~body:"[436694100]")
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)

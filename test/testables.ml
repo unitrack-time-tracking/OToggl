@@ -1,7 +1,7 @@
 open Alcotest
 
 module Toggl = struct
-  open Otoggl.Toggl.Types
+  open Toggl.Types
 
   let time_entry : time_entry testable =
     (module struct

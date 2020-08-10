@@ -1,6 +1,6 @@
 (library
  ; The namespace that other packages/libraries will access this library through
- (name Otoggl)
+ (name Toggl)
  ; Other libraries list this name in their package.json 'require' field to use this library.
  (public_name otoggl.lib)
  (libraries piaf containers base64 atdgen-runtime ptime ptime.clock.os)

@@ -1,39 +1,9 @@
-module Types = struct
-  include Toggl_t
-  include Toggl_j
-  include Toggl_v
-
-  let create_time_entry =
-    Toggl_v.create_time_entry_request ~created_with:"trackoclock"
-end
-
 open Types
 
-module Auth = struct
-  type t =
-    | Basic of
-        { username : string
-        ; password : string
-        }
-    | ApiToken of string
+module F (Client : module type of Piaf.Client) = struct
+  let create_client ?config () =
+    Client.create ?config @@ Uri.of_string "https://api.toggl.com"
 
-  let get_header meth =
-    (match meth with
-    | ApiToken token ->
-      Authenticated.Basic { username = token; password = "api_token" }
-    | Basic { username; password } ->
-      Authenticated.Basic { username; password })
-    |> Authenticated.create_header
-end
-
-module Client (Authentication : sig
-  val auth : Auth.t
-end) =
-Authenticated.F (struct
-  let header = Auth.get_header Authentication.auth |> CCResult.get_or_failwith
-end)
-
-module Api (Client : module type of Piaf.Client) = struct
   module TimeEntry = struct
     open Lwt_result
 
@@ -59,7 +29,7 @@ module Api (Client : module type of Piaf.Client) = struct
       >|= data_time_entry_of_string
       >|= fun x -> x.data
 
-    let stop tid (client : Client.t) =
+    let stop (tid : tid) (client : Client.t) =
       let body = Piaf.Body.empty in
       "/api/v8/time_entries/" ^ string_of_int tid ^ "/stop"
       |> Client.put client ~body
@@ -73,17 +43,18 @@ module Api (Client : module type of Piaf.Client) = struct
       >|= data_time_entry_of_string
       >|= fun x -> x.data
 
-    let details tid (client : Client.t) =
+    let details (tid : tid) (client : Client.t) =
       "/api/v8/time_entries/" ^ string_of_int tid
       |> Client.get client
       >>= Util.status_200_or_error
       >|= data_time_entry_of_string
       >|= fun x -> x.data
 
-    let delete tid (client : Client.t) =
+    let delete (tid : tid) (client : Client.t) =
       "/api/v8/time_entries/" ^ string_of_int tid
       |> Client.delete client
       >>= Util.status_200_or_error
+      >|= tid_list_of_string
 
     let list ?start_date ?end_date (client : Client.t) =
       (* We will use timestamps set on UTC *)
@@ -180,5 +151,6 @@ module Api (Client : module type of Piaf.Client) = struct
       "/api/v8/projects/" ^ string_of_int pid
       |> Client.delete client
       >>= Util.status_200_or_error
+      >|= pid_list_of_string
   end
 end

@@ -1,20 +1,38 @@
 module type Client = module type of Piaf.Client
 
-module F (A : sig
-  val header : string
+type t =
+  | Basic of
+      { username : string
+      ; password : string
+      }
+  | ApiToken of string
+
+let create_header (meth : t) : (string, string) result =
+  let create_basic_credentials ~username ~password =
+    match Base64.encode (username ^ ":" ^ password) with
+    | Ok creds ->
+      Ok ("Basic " ^ creds)
+    | Error (`Msg e) ->
+      Error e
+  in
+  match meth with
+  | ApiToken token ->
+    create_basic_credentials ~username:token ~password:"api_token"
+  | Basic { username; password } ->
+    create_basic_credentials ~username ~password
+
+module Client (Authentication : sig
+  val auth : t
 end) : Client with type t = Piaf.Client.t = struct
   include Piaf.Client
 
-  let create = create
-
-  let shutdown = shutdown
+  let header = create_header Authentication.auth |> CCResult.get_or_failwith
 
   let add_authorization = function
     | None ->
-      Some [ "Authorization", A.header ]
+      Some [ "Authorization", header ]
     | Some headers ->
-      Some
-        (CCList.Assoc.set ~eq:CCString.equal "Authorization" A.header headers)
+      Some (CCList.Assoc.set ~eq:CCString.equal "Authorization" header headers)
 
   let request client ?headers =
     let headers = add_authorization headers in
@@ -74,21 +92,3 @@ end) : Client with type t = Piaf.Client.t = struct
       Oneshot.request ?config ?headers
   end
 end
-
-type meth =
-  | Basic of
-      { username : string
-      ; password : string
-      }
-  | Bearer of string
-
-let create_header (meth : meth) : (string, string) result =
-  match meth with
-  | Bearer token ->
-    Ok ("Bearer " ^ token)
-  | Basic { username; password } ->
-    (match Base64.encode (username ^ ":" ^ password) with
-    | Ok creds ->
-      Ok ("Basic " ^ creds)
-    | Error (`Msg e) ->
-      Error e)
