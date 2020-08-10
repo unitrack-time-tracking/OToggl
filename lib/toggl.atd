@@ -49,7 +49,7 @@ type project = {
   wid: wid;
   name: string;
   at: datetime;
-  created_at: datetime;
+  ?created_at: datetime option;
   ~billable: bool;
   ~is_private: bool;
   ~active: bool;
@@ -67,6 +67,7 @@ type workspace_list = workspace list
 type project_list = project list
 type time_entry_list = time_entry list
 type data_time_entry = {data: time_entry}
+type data_project = {data: project}
 
 <doc text="Request types">
 
@@ -95,5 +96,22 @@ type time_entry_update_request = {
   ?billable: bool option
 } <json keep_nulls> <doc text="Represents a time entry as we send to Toggl when updating one">
 
+type project_request = {
+  wid: wid;
+  name: string;
+  ~billable: bool;
+  ~is_private: bool;
+  ~active: bool;
+  ~auto_estimates: bool;
+  ~estimated_hours: bool;
+  ~actual_hours: int;
+  ~template: bool;
+  ?template_id: int option;
+  ?cid: int option;
+  ?color: string option;
+  ?hex_color: string option
+} <json keep_nulls> <doc text="Represents a project as we send to Toggl when creating one">
+
 type wrapped_time_entry = {time_entry: time_entry_request}
 type wrapped_time_entry_update_request = {time_entry: time_entry_update_request}
+type wrapped_project_request = {project: project_request}

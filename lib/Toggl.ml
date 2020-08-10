@@ -156,11 +156,29 @@ module Api (Client : module type of Piaf.Client) = struct
   end
 
   module Project = struct
+    open Lwt_result
+
     let list wid (client : Client.t) =
       let open Lwt_result in
       "/api/v8/workspaces/" ^ string_of_int wid ^ "/projects"
       |> Client.get client
       >>= Util.status_200_or_error
       >|= project_list_of_string
+
+    let create t (client : Client.t) =
+      let body =
+        { project = t }
+        |> string_of_wrapped_project_request
+        |> Piaf.Body.of_string
+      in
+      Client.post client ~body "/api/v8/projects"
+      >>= Util.status_200_or_error
+      >|= data_project_of_string
+      >|= fun x -> x.data
+
+    let delete pid (client : Client.t) =
+      "/api/v8/projects/" ^ string_of_int pid
+      |> Client.delete client
+      >>= Util.status_200_or_error
   end
 end

@@ -7,6 +7,9 @@ let username = Sys.getenv "toggl_token"
 
 let password = "api_token"
 
+let run_name =
+  Sys.getenv_opt "GITHUB_RUN_ID" |> CCOpt.get_or ~default:"Test run"
+
 module Client = Otoggl.Toggl.Client (struct
   let auth = Auth.Basic { username; password }
 end)
@@ -20,7 +23,7 @@ let client =
 
 (* Utility functions for writing tests *)
 let wait value =
-  let* _ = Lwt_unix.sleep 0.5 in
+  let* _ = Lwt_unix.sleep 1. in
   return value
 
 let get_workspace _switch =
@@ -29,6 +32,52 @@ let get_workspace _switch =
   >|= get_or_failwith
   >|= List.filter (fun ({ name; _ } : Types.workspace) -> name = "Personal")
   >|= List.hd
+
+let delete_run_project _switch ({ id; _ } : Types.project) =
+  client >>= Project.delete id >|= get_or_failwith >|= wait
+
+let create_run_project
+    switch
+    ?(name = run_name)
+    ?(billable = false)
+    ?(is_private = false)
+    ?(active = false)
+    ?(auto_estimates = false)
+    ?(estimated_hours = false)
+    ?(actual_hours = 0)
+    ?(template = false)
+    ?template_id
+    ?cid
+    ?color
+    ?hex_color
+    ({ id = wid; _ } : Types.workspace)
+  =
+  let project_request =
+    Types.create_project_request
+      ~wid
+      ~name
+      ~billable
+      ~is_private
+      ~active
+      ~auto_estimates
+      ~estimated_hours
+      ~actual_hours
+      ~template
+      ?template_id
+      ?cid
+      ?color
+      ?hex_color
+      ()
+  in
+  let project =
+    client >>= Project.create project_request >|= get_or_failwith >>= wait
+  in
+  Lwt_switch.add_hook (Some switch) (fun () ->
+      print_string "Deleting project\n";
+      let promise = project >>= delete_run_project switch >|= ignore in
+      print_string "Project deleted\n";
+      promise);
+  project
 
 let get_project _switch ({ id; _ } : Types.workspace) =
   client >>= Project.list id >|= get_or_failwith >|= List.hd
@@ -83,7 +132,10 @@ let start_time_entry switch ({ id; wid; _ } : Types.project) =
     >>= wait
   in
   Lwt_switch.add_hook (Some switch) (fun () ->
-      time_entry >>= delete_time_entry switch >|= ignore);
+      print_string "Deleting time entry\n";
+      let promise = time_entry >>= delete_time_entry switch >|= ignore in
+      print_string "Deleted time entry\n";
+      promise);
   time_entry
 
 let get_time_entry _switch (time_entry : Types.time_entry) =
@@ -92,16 +144,11 @@ let get_time_entry _switch (time_entry : Types.time_entry) =
 let get_current_time_entry _switch =
   client >>= TimeEntry.current >|= get_or_failwith >>= wait
 
-let list_time_entries ?start_date ?end_date switch =
+let list_time_entries ?start_date ?end_date (pid : Types.pid) _switch =
   client
   >>= TimeEntry.list ?start_date ?end_date
   >|= get_or_failwith
-  |> both (get_workspace switch)
-  >|= (function
-        | workspace, time_entries ->
-          List.filter
-            (fun (te : Types.time_entry) -> te.wid = workspace.id)
-            time_entries)
+  >|= List.filter (fun (te : Types.time_entry) -> te.pid = Some pid)
   >>= wait
 
 let update_time_entry
@@ -135,16 +182,16 @@ let update_time_entry
 (* Tests *)
 let test_start_get_stop_delete switch () =
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
-  let* _ = start_time_entry switch project in
-  let* time_entry = get_current_time_entry switch in
-  let* time_entry = stop_time_entry switch time_entry in
+  let* project = create_run_project switch workspace in
+  let* time_entry = start_time_entry switch project in
+  let* _ = get_current_time_entry switch in
+  let* _ = stop_time_entry switch time_entry in
   let* _ = delete_time_entry switch time_entry in
   return ()
 
 let test_start_stop_delete switch () =
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* time_entry = start_time_entry switch project in
   let* time_entry = stop_time_entry switch time_entry in
   let* _ = delete_time_entry switch time_entry in
@@ -152,23 +199,23 @@ let test_start_stop_delete switch () =
 
 let test_start_get_delete switch () =
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
-  let* _ = start_time_entry switch project in
-  let* time_entry = get_current_time_entry switch in
+  let* project = create_run_project switch workspace in
+  let* time_entry = start_time_entry switch project in
+  let* _ = get_current_time_entry switch in
   let* _ = delete_time_entry switch time_entry in
   return ()
 
 let test_start_delete switch () =
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
-  let* _ = start_time_entry switch project in
-  let* time_entry = get_current_time_entry switch in
+  let* project = create_run_project switch workspace in
+  let* time_entry = start_time_entry switch project in
+  let* _ = get_current_time_entry switch in
   let* _ = delete_time_entry switch time_entry in
   return ()
 
 let test_create_get_delete switch () =
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* time_entry = create_time_entry switch ~pid:project.id in
   let* time_entry = get_time_entry switch time_entry in
   let* _ = delete_time_entry switch time_entry in
@@ -179,10 +226,10 @@ let test_create_and_list_start_date_before switch () =
   let one_h = Ptime.Span.of_int_s 3600 in
   let start_date = Ptime.sub_span start_date one_h in
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* time_entry = start_time_entry switch project in
   let* time_entry = stop_time_entry switch time_entry in
-  let* time_entries = list_time_entries ?start_date switch in
+  let* time_entries = list_time_entries ?start_date project.id switch in
   let* _ =
     return
     @@ Alcotest.(check (list Testables.Toggl.time_entry))
@@ -197,10 +244,10 @@ let test_create_and_list_end_date_after switch () =
   let one_h = Ptime.Span.of_int_s 3600 in
   let end_date = Ptime.add_span end_date one_h in
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* time_entry = start_time_entry switch project in
   let* time_entry = stop_time_entry switch time_entry in
-  let* time_entries = list_time_entries ?end_date switch in
+  let* time_entries = list_time_entries ?end_date project.id switch in
   let* _ =
     return
     @@ Alcotest.(check (list Testables.Toggl.time_entry))
@@ -215,10 +262,10 @@ let test_create_and_list_start_date_after switch () =
   let one_h = Ptime.Span.of_int_s 3600 in
   let start_date = Ptime.add_span start_date one_h in
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* time_entry = start_time_entry switch project in
   let* _ = stop_time_entry switch time_entry in
-  let* time_entries = list_time_entries ?start_date switch in
+  let* time_entries = list_time_entries ?start_date project.id switch in
   let* _ =
     return
     @@ Alcotest.(check (list Testables.Toggl.time_entry))
@@ -233,10 +280,10 @@ let test_create_and_list_end_date_before switch () =
   let one_h = Ptime.Span.of_int_s 3600 in
   let end_date = Ptime.sub_span end_date one_h in
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* time_entry = start_time_entry switch project in
   let* _ = stop_time_entry switch time_entry in
-  let* time_entries = list_time_entries ?end_date switch in
+  let* time_entries = list_time_entries ?end_date project.id switch in
   let* _ =
     return
     @@ Alcotest.(check (list Testables.Toggl.time_entry))
@@ -248,7 +295,7 @@ let test_create_and_list_end_date_before switch () =
 
 let test_modify_time_entry switch () =
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project = create_run_project switch workspace in
   let* te0 = create_time_entry ~pid:project.id switch in
   let* _ =
     return
@@ -257,7 +304,7 @@ let test_modify_time_entry switch () =
          "Expected initial state"
          { id = te0.id
          ; wid = 4436316
-         ; pid = Some 161895933
+         ; pid = Some project.id
          ; tags = []
          ; billable = false
          ; start =
@@ -352,14 +399,16 @@ let test_modify_time_entry switch () =
          te6
   in
   let* workspace = get_workspace switch in
-  let* project = get_project switch workspace in
+  let* project =
+    create_run_project ~name:("New " ^ project.name) switch workspace
+  in
   let* te6' = update_time_entry te5.id ~project:(Some project) switch in
   let* _ =
     return
     @@ Alcotest.check
          Testables.Toggl.time_entry
          "Project added"
-         { te5 with pid = te0.pid; at = te6'.at }
+         { te5 with pid = Some project.id; at = te6'.at }
          te6'
   in
   (* TODO test modifying workspace after creating a new one maybe *)
