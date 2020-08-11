@@ -21,7 +21,11 @@ end)
 
 open Api.F (Client)
 
-let get_or_failwith = function Ok x -> x | Error e -> failwith e
+let get_or_failwith = function
+  | Ok x ->
+    x
+  | Error e ->
+    failwith @@ Piaf.Error.to_string e
 
 let client = create_client () >|= get_or_failwith
 

@@ -1,5 +1,6 @@
 (lang dune 2.0)
 (name otoggl)
+(version 0.2.1)
 (source (github christophe-riolo/otoggl))
 (license MIT)
 (authors "Christophe Riolo Uusivaara")

@@ -1,22 +1,22 @@
 {
   "name": "otoggl",
+  "version": "0.2.1",
   "esy": {
     "build": "dune build -p #{self.name}",
     "buildDev": "dune build --root . --only-package #{self.name}",
-    "install": "esy-installer #{self.target_dir / 'default' / self.name '.install'}",
-    "buildEnv": {
-      "ODOC_SYNTAX": "ml"
-    }
+    "install":
+      "esy-installer #{self.target_dir / 'default' / self.name '.install'}",
+    "buildEnv": { "ODOC_SYNTAX": "ml" }
   },
   "dependencies": {
-    "@opam/base": "*",
-    "@opam/dune": ">= 2.0",
-    "@opam/containers": "*",
-    "@reason-native-web/piaf": "*",
-    "@opam/base64": "*",
     "@opam/atdgen-runtime": "*",
+    "@opam/base": "*",
+    "@opam/base64": "*",
+    "@opam/containers": "*",
+    "@opam/dune": ">= 2.0",
     "@opam/lwt": "*",
     "@opam/ptime": "*",
+    "@reason-native-web/piaf": "~1.4",
     "ocaml": ">= 4.8.0"
   },
   "devDependencies": {
@@ -41,8 +41,8 @@
     "watch": "esy dune build -p #{self.name} --watch",
     "utop": "esy dune utop lib -- -implicit-bindings",
     "release": "./script/release.sh",
-    "bump-patch": "bump patch --commit \"Release v\" --tag \"v\" package.json README.md",
-    "bump-minor": "bump minor --commit \"Release v\" --tag \"v\" package.json README.md",
-    "bump-major": "bump major --commit \"Release v\" --tag \"v\" package.json README.md"
+    "bump-patch": "bump patch -tc package.json README.md dune-project",
+    "bump-minor": "bump minor -tc package.json README.md dune-project",
+    "bump-major": "bump major -tc package.json README.md dune-project"
   }
 }

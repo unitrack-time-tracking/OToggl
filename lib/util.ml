@@ -1,8 +1,9 @@
 open Piaf
 
-let status_200_or_error (response : Response.t) : (string, string) Lwt_result.t =
-  let open Lwt in
-  if Status.is_successful @@ Response.status response then
-    Body.to_string response.body >|= CCResult.return
+let status_200_or_error (response : Response.t) : (string, Error.t) Lwt_result.t
+  =
+  let open Lwt_result in
+  if Status.is_successful @@ response.status then
+    Body.to_string response.body
   else
-    Body.to_string response.body >|= CCResult.fail
+    bind (Body.to_string response.body >|= fun s -> (`Msg s :> Error.t)) fail
