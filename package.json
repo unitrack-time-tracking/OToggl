@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "@opam/atdgen": "*",
+        "@opam/ppx_deriving": "*",
         "@opam/base": "*",
         "@opam/base64": "*",
         "@opam/containers": "*",
@@ -29,8 +30,7 @@
         "@opam/merlin": "*",
         "@opam/ocamlformat": "*",
         "@opam/odoc": "*",
-        "@opam/utop": "*",
-        "@opam/ppx_deriving": "*"
+        "@opam/utop": "*"
     },
     "scripts": {
         "test": "esy dune build @test/runtest -f",
