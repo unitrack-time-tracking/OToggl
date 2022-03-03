@@ -94,7 +94,7 @@ module F (Client : module type of Piaf.Client) = struct
         (client : Client.t)
       =
       let time_entry =
-        CCOpt.(
+        CCOption.(
           Types.create_time_entry_update_request
             ?description
             ?start

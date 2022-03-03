@@ -6,7 +6,7 @@
 
 (executable
  (name test_runner)
- (libraries base alcotest otoggl_test)
+ (libraries alcotest otoggl_test)
  (modules test_runner))
 
 (rule

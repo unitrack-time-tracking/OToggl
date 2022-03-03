@@ -10,9 +10,9 @@ let password = "api_token"
 let run_name =
   Random.self_init ();
   let run_id =
-    Sys.getenv_opt "GITHUB_RUN_ID" |> CCOpt.get_or ~default:"Test run"
+    Sys.getenv_opt "GITHUB_RUN_ID" |> CCOption.get_or ~default:"Test run"
   in
-  let workflow = Sys.getenv_opt "GITHUB_WORKFLOW" |> CCOpt.get_or ~default:"" in
+  let workflow = Sys.getenv_opt "GITHUB_WORKFLOW" |> CCOption.get_or ~default:"" in
   workflow ^ run_id ^ Int.to_string @@ Random.int 1_000_000_000
 
 module Client = Auth.Client (struct
@@ -320,10 +320,10 @@ let test_modify_time_entry switch () =
          ; tags = []
          ; billable = false
          ; start =
-             CCOpt.get_exn @@ Ptime.of_date_time ((2020, 1, 1), ((0, 0, 0), 0))
+             CCOption.get_exn_or "Expected value" @@ Ptime.of_date_time ((2020, 1, 1), ((0, 0, 0), 0))
          ; stop =
              Some
-               (CCOpt.get_exn
+               (CCOption.get_exn_or "Expected value"
                @@ Ptime.of_date_time ((2020, 1, 1), ((1, 0, 0), 0)))
          ; duration = 3600
          ; description = "Test time entry"
@@ -376,7 +376,7 @@ let test_modify_time_entry switch () =
   let* te4 =
     update_time_entry
       te3.id
-      ~start:(Ptime.add_span te3.start (Ptime.Span.of_int_s 60) |> CCOpt.get_exn)
+      ~start:(Ptime.add_span te3.start (Ptime.Span.of_int_s 60) |> CCOption.get_exn_or "Expected value")
       switch
   in
   let* _ =
@@ -386,7 +386,7 @@ let test_modify_time_entry switch () =
          "Start and stop times modified"
          { te3 with
            start =
-             CCOpt.get_exn @@ Ptime.add_span te3.start (Ptime.Span.of_int_s 60)
+             CCOption.get_exn_or "Expected value" @@ Ptime.add_span te3.start (Ptime.Span.of_int_s 60)
          ; stop = Ptime.add_span te4.start (Ptime.Span.of_int_s te3.duration)
          ; at = te4.at
          }

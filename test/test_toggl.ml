@@ -139,16 +139,16 @@ module TestNormalBehaviour = struct
   let test_list_time_entries_query _switch () =
     client
     >>= Api.TimeEntry.list
-          ~start_date:(CCOpt.get_exn @@ Ptime.of_date (2020, 1, 1))
-          ~end_date:(CCOpt.get_exn @@ Ptime.of_date (2020, 1, 2))
+          ~start_date:(CCOption.get_exn_or "Expected value" @@ Ptime.of_date (2020, 1, 1))
+          ~end_date:(CCOption.get_exn_or "Expected value" @@ Ptime.of_date (2020, 1, 2))
     >|= check (list Testables.Toggl.time_entry) "Same projects" [ time_entry ]
     |> raise_error
 
   let test_list_time_entries_future _switch () =
     client
     >>= Api.TimeEntry.list
-          ~start_date:(CCOpt.get_exn @@ Ptime.of_date (4020, 1, 1))
-          ~end_date:(CCOpt.get_exn @@ Ptime.of_date (4020, 1, 2))
+          ~start_date:(CCOption.get_exn_or "Expected value" @@ Ptime.of_date (4020, 1, 1))
+          ~end_date:(CCOption.get_exn_or "Expected value" @@ Ptime.of_date (4020, 1, 2))
     >|= check (list Testables.Toggl.time_entry) "Same projects" []
     |> raise_error
 
