@@ -7,7 +7,7 @@ let post
     ?(body : Body.t option)
     path
   =
-  ignore (headers, body, path);
+  ignore (headers, body, path) ;
   Lwt_result.fail @@ `Connect_error "connection error"
 
 let put
@@ -16,11 +16,11 @@ let put
     ?(body : Body.t option)
     path
   =
-  ignore (headers, body, path);
+  ignore (headers, body, path) ;
   Lwt_result.fail @@ `Connect_error "connection error"
 
 let get (_t : t) ?(headers : (string * string) list option) path =
-  ignore (headers, path);
+  ignore (headers, path) ;
   Lwt_result.fail @@ `Connect_error "connection error"
 
 let delete
@@ -29,5 +29,5 @@ let delete
     ?(body : Body.t option)
     path
   =
-  ignore (headers, body, path);
+  ignore (headers, body, path) ;
   Lwt_result.fail @@ `Connect_error "connection error"

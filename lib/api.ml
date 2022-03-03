@@ -9,9 +9,7 @@ module F (Client : module type of Piaf.Client) = struct
 
     let create t (client : Client.t) =
       let body =
-        { time_entry = t }
-        |> string_of_wrapped_time_entry
-        |> Piaf.Body.of_string
+        {time_entry= t} |> string_of_wrapped_time_entry |> Piaf.Body.of_string
       in
       Client.post client ~body "/api/v8/time_entries"
       >>= Util.status_200_or_error
@@ -20,9 +18,7 @@ module F (Client : module type of Piaf.Client) = struct
 
     let start t (client : Client.t) =
       let body =
-        { time_entry = t }
-        |> string_of_wrapped_time_entry
-        |> Piaf.Body.of_string
+        {time_entry= t} |> string_of_wrapped_time_entry |> Piaf.Body.of_string
       in
       Client.post client ~body "/api/v8/time_entries/start"
       >>= Util.status_200_or_error
@@ -65,14 +61,14 @@ module F (Client : module type of Piaf.Client) = struct
         | None ->
           query
         | Some date ->
-          ("end_date", [ Ptime.to_rfc3339 ~tz_offset_s date ]) :: query
+          ("end_date", [Ptime.to_rfc3339 ~tz_offset_s date]) :: query
       in
       let query =
         match start_date with
         | None ->
           query
         | Some date ->
-          ("start_date", [ Ptime.to_rfc3339 ~tz_offset_s date ]) :: query
+          ("start_date", [Ptime.to_rfc3339 ~tz_offset_s date]) :: query
       in
       Uri.make ~path:"/api/v8/time_entries" ~query ()
       |> Uri.to_string
@@ -95,17 +91,11 @@ module F (Client : module type of Piaf.Client) = struct
       =
       let time_entry =
         CCOption.(
-          Types.create_time_entry_update_request
-            ?description
-            ?start
-            ?stop
-            ?duration
-            ?tags
+          Types.create_time_entry_update_request ?description ?start ?stop
+            ?duration ?tags
             ?pid:(project >|= function None -> None | Some p -> Some p.id)
             ?wid:(workspace >|= fun w -> w.id)
-            ?duronly
-            ?billable
-            ())
+            ?duronly ?billable ())
       in
       let body =
         create_wrapped_time_entry_update_request ~time_entry ()
@@ -138,9 +128,7 @@ module F (Client : module type of Piaf.Client) = struct
 
     let create t (client : Client.t) =
       let body =
-        { project = t }
-        |> string_of_wrapped_project_request
-        |> Piaf.Body.of_string
+        {project= t} |> string_of_wrapped_project_request |> Piaf.Body.of_string
       in
       Client.post client ~body "/api/v8/projects"
       >>= Util.status_200_or_error

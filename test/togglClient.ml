@@ -110,7 +110,7 @@ let post
     ?(body : Body.t option)
     path
   =
-  ignore (headers, body);
+  ignore (headers, body) ;
   match path with
   | "/api/v8/time_entries" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
@@ -125,7 +125,7 @@ let put
     ?(body : Body.t option)
     path
   =
-  ignore (headers, body);
+  ignore (headers, body) ;
   match path with
   | "/api/v8/time_entries/436694100/stop" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
@@ -133,7 +133,7 @@ let put
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
 
 let get (_t : t) ?(headers : (string * string) list option) path =
-  ignore headers;
+  ignore headers ;
   match path with
   | "/api/v8/workspaces/777/projects" ->
     Lwt_result.return (Response.of_string `OK ~body:projects)
@@ -160,7 +160,7 @@ let delete
     ?(body : Body.t option)
     path
   =
-  ignore (headers, body);
+  ignore (headers, body) ;
   match path with
   | "/api/v8/time_entries/436694100" ->
     Lwt_result.return (Response.of_string `OK ~body:"[436694100]")
