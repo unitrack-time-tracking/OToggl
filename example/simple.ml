@@ -1,7 +1,7 @@
 (* We first create an authenticated client by providing credentials *)
 
 module Client = Toggl.Auth.Client (struct
-  let auth = Toggl.Auth.Basic { username = "user"; password = "passwd" }
+  let auth = Toggl.Auth.Basic {username= "user"; password= "passwd"}
 
   (* or let auth = Toggl.Auth.ApiToken "my_token" *)
 end)
@@ -15,5 +15,6 @@ module Api = Toggl.Api.F (Client)
 open Lwt_result
 
 let _ =
-  Api.create_client () >>= Api.TimeEntry.current >>= fun time_entry ->
-  return @@ print_string time_entry.description
+  Api.create_client ()
+  >>= Api.TimeEntry.current
+  >>= fun time_entry -> return @@ print_string time_entry.description

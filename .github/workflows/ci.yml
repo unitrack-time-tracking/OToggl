@@ -1,51 +1,40 @@
 name: CI
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
+
     name: Build and test
+
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - 4.12.x
+
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
         with:
-          node-version: 12
-
-      - uses: actions/checkout@v2
-      - name: Cache esy dependencies
-        uses: actions/cache@v1
-        id: cache
-        with:
-          path: _export
-          key: ${{ runner.OS }}-build-${{ hashFiles('esy.lock/index.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
-
-      - name: Install esy
-        run: npm install -g esy@latest
-
-      - name: Import dependencies
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: esy import-build _export/*
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
 
       - name: Install dependencies
-        run: esy install
+        run: opam install . --deps-only --with-test
 
       - name: Build
-        run: esy build
+        run: opam exec -- dune build
 
       - name: Check formatting
-        run: esy format
+        run: opam exec -- dune build @fmt
 
       - name: Run tests
-        run: esy test-slow
+        run: opam exec --  dune build @test/runtest-slow
         env:
           toggl_token: ${{ secrets.TOGGL_TOKEN }}
-        
-      - name: Export dependencies
-        run: esy export-dependencies

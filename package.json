@@ -12,24 +12,17 @@
     "dependencies": {
         "@opam/atdgen": "*",
         "@opam/ppx_deriving": "*",
-        "@opam/base": "*",
         "@opam/base64": "*",
-        "@opam/containers": "*",
         "@opam/dune": ">= 2.0",
-        "@opam/lwt": "*",
         "@opam/ptime": "*",
         "@reason-native-web/piaf": "~1.4",
+        "@opam/lwt": "*",
         "ocaml": ">= 4.8.0"
     },
     "devDependencies": {
-        "@esy-ocaml/reason": "*",
-        "@jsdevtools/version-bump-prompt": "*",
-        "@opam/alcotest": "*",
-        "@opam/alcotest-lwt": "*",
         "@opam/dune-release": "*",
         "@opam/merlin": "*",
         "@opam/ocamlformat": "*",
-        "@opam/odoc": "*",
         "@opam/utop": "*"
     },
     "scripts": {

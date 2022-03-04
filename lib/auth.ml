@@ -1,10 +1,10 @@
 module type Client = module type of Piaf.Client
 
 type t =
-  | Basic of
-      { username : string
-      ; password : string
-      }
+  | Basic of {
+      username: string;
+      password: string;
+    }
   | ApiToken of string
 
 let create_header (meth : t) : (string, string) result =
@@ -18,7 +18,7 @@ let create_header (meth : t) : (string, string) result =
   match meth with
   | ApiToken token ->
     create_basic_credentials ~username:token ~password:"api_token"
-  | Basic { username; password } ->
+  | Basic {username; password} ->
     create_basic_credentials ~username ~password
 
 module Client (Authentication : sig
@@ -30,7 +30,7 @@ end) : Client with type t = Piaf.Client.t = struct
 
   let add_authorization = function
     | None ->
-      Some [ "Authorization", header ]
+      Some ["Authorization", header]
     | Some headers ->
       Some (CCList.Assoc.set ~eq:CCString.equal "Authorization" header headers)
 
