@@ -2,7 +2,7 @@ open Types
 
 module F (Client : module type of Piaf.Client) = struct
   let create_client ?config () =
-    Client.create ?config @@ Uri.of_string "https://api.toggl.com"
+    Client.create ?config @@ Uri.of_string "https://api.track.toggl.com"
 
   module TimeEntry = struct
     open Lwt_result
