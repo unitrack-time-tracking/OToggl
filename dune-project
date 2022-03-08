@@ -1,6 +1,6 @@
 (lang dune 2.0)
 (name otoggl)
-(version 0.2.1)
+(version 0.3.0)
 (source (github unitrack-time-tracking/OToggl))
 (license MIT)
 (authors "Christophe Riolo Uusivaara")
