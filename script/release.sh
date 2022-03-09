@@ -14,10 +14,10 @@ if [ -d ".git" ]; then
     exit 1
   else
     dune-release tag
-    dune-release distrib
-    dune-release publish -y
-    dune-release opam pkg
-    dune-release opam submit --no-auto-open -y
+    dune-release distrib -p otoggl
+    dune-release publish -y -p otoggl
+    dune-release opam pkg -p otoggl
+    dune-release opam submit --no-auto-open -y -p otoggl
   fi
 else
   echo "This project is not a git repository. Run `git init` first to be able to release."

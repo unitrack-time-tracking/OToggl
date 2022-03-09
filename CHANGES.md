@@ -1,3 +1,9 @@
+# 0.3.1
+
+## Changed
+
+- #1 Update release script to publish only otoggl.opam and not dev.opam
+
 # 0.3
 
 There is a lot missing because the file had not been updated. I will start again from now
