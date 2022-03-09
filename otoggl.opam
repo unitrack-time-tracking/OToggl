@@ -10,20 +10,20 @@ homepage: "https://github.com/unitrack-time-tracking/OToggl"
 bug-reports: "https://github.com/unitrack-time-tracking/OToggl/issues"
 depends: [
   "ocaml" {>= "4.06.0"}
-  "atdgen" {build & >= "2.2" & < "3"}
-  "atdgen-runtime" {>= "2" & < "3"}
-  "base64" {>= "3" & < "4"}
-  "containers" {>= "3" & < "4"}
-  "dune" {>= "2.0"}
-  "piaf" {>= "0"}
-  "ppx_deriving" {>= "4" & < "5"}
-  "ptime" {>= "0"}
+  "atdgen" {build & >= "2"}
+  "atdgen-runtime" {>= "2"}
+  "base64" {>= "3"}
+  "containers" {>= "3.6"}
+  "dune" {>= "2.9" & >= "2.0"}
+  "piaf" {>= "0.1.0"}
+  "ppx_deriving" {build}
+  "ptime" {>= "1.0.0"}
   "alcotest" {with-test}
   "alcotest-lwt" {with-test}
   "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -31,9 +31,11 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/unitrack-time-tracking/OToggl.git"
