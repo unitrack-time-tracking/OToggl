@@ -3,7 +3,7 @@ open Lwt.Syntax
 open Toggl
 
 (* Create the authenticated client using the token in environment *)
-let username = Sys.getenv "toggl_token"
+let username = Sys.getenv_opt "toggl_token" |> Option.value ~default:"token"
 
 let password = "api_token"
 

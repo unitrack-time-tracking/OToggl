@@ -14,7 +14,12 @@ jobs:
         os:
           - ubuntu-latest
         ocaml-compiler:
+          - 4.08.x
+          - 4.09.x
+          - 4.10.x
+          - 4.11.x
           - 4.12.x
+          - 4.13.x
 
     steps:
       - uses: actions/checkout@v3
@@ -34,7 +39,11 @@ jobs:
       - name: Check formatting
         run: opam exec -- dune build @fmt
 
-      - name: Run tests
+      - name: Run unit tests
+        run: opam exec --  dune build @test/runtest
+
+      - name: Run integration tests
         run: opam exec --  dune build @test/runtest-slow
+        if: ${{ matrix.ocaml-compiler == '4.12.x' }}
         env:
           toggl_token: ${{ secrets.TOGGL_TOKEN }}
