@@ -1,0 +1,46 @@
+name: Test readiness for Opam
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  lint:
+    name: Lint opam file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+
+      - name: Lint opam file
+        run: opam lint otoggl.opam
+
+  build_lower_bound:
+    name: Build and test lower bound
+    needs: lint
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - 4.08
+          - 4.09
+          - 4.10
+          - 4.11
+          - 4.12
+          - 4.13
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test dependencies
+        run: docker build --build-arg VERSION=${{ matrix.ocaml-compiler }} .
