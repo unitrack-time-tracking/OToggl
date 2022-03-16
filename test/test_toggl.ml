@@ -12,7 +12,7 @@ let get_datetime s =
 module TestNormalBehaviour = struct
   module Api = Api.F (TogglClient)
 
-  let client = Api.create_client ()
+  let client = Lwt_result.return TogglClient.client
 
   let time_entry_request =
     create_time_entry_request ~pid:123 ~wid:777 ~billable:false
@@ -140,7 +140,7 @@ module TestNotFound = struct
   module Api = Api.F (TogglClient)
   open Lwt_result
 
-  let client = Api.create_client ()
+  let client = Lwt_result.return TogglClient.client
 
   let test_stop_time_entry _switch () =
     client
@@ -175,7 +175,7 @@ module TestConnectionError = struct
   module Api = Api.F (TogglErrorClient)
   open Lwt_result
 
-  let client = Api.create_client ()
+  let client = Lwt_result.return TogglErrorClient.client
 
   let test_stop_time_entry _switch () =
     client

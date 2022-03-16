@@ -1,6 +1,8 @@
 open Piaf
 include Client
 
+let client = Obj.magic None
+
 let time_entry =
   {json|
 {

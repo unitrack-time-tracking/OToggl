@@ -18,7 +18,6 @@
   (atdgen-runtime (>= 2))
   (base64 (>= 3))
   (containers (>= 3.6))
-  (dune (>= 2.0))
   (piaf (>= 0.1.0))
   (ppx_deriving :build)
   (ptime (>= 1.0.0))
