@@ -1,3 +1,10 @@
+# 0.3.2
+
+- Updated the CI workflows to test all the versions of the compiler and the lower bounds of dependencies.
+- Updated the unit tests to run without the Toggl token.
+- Updated the unit tests to run without an internet connection.
+- Updated the dependencies.
+
 # 0.3.1
 
 ## Changed
