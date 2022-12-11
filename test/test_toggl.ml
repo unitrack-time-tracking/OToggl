@@ -4,7 +4,7 @@ open Types
 
 let raise_error result =
   let open Lwt_result in
-  result |> map_err (fun err -> Failure (Piaf.Error.to_string err)) |> get_exn
+  result |> map_error (fun err -> Failure (Piaf.Error.to_string err)) |> get_exn
 
 let get_datetime s =
   s |> Ptime.of_rfc3339 |> CCResult.get_exn |> function d, _, _ -> d
@@ -145,29 +145,29 @@ module TestNotFound = struct
   let test_stop_time_entry _switch () =
     client
     >>= Api.TimeEntry.stop 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Says that url is not found" "not_found")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Says that url is not found" "not_found")
     |> Lwt.map Result.get_error
 
   let test_list_projects _switch () =
     client
     >>= Api.Project.list 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Says that url is not found" "not_found")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Says that url is not found" "not_found")
     |> Lwt.map Result.get_error
 
   let test_time_entry_details _switch () =
     client
     >>= Api.TimeEntry.details 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Says that url is not found" "not_found")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Says that url is not found" "not_found")
     |> Lwt.map Result.get_error
 
   let test_delete_time_entry _switch () =
     client
     >>= Api.TimeEntry.delete 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Says that url is not found" "not_found")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Says that url is not found" "not_found")
     |> Lwt.map Result.get_error
 end
 
@@ -180,15 +180,15 @@ module TestConnectionError = struct
   let test_stop_time_entry _switch () =
     client
     >>= Api.TimeEntry.stop 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_list_projects _switch () =
     client
     >>= Api.Project.list 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_start_time_entry _switch () =
@@ -196,8 +196,8 @@ module TestConnectionError = struct
     >>= Api.TimeEntry.start
           (create_time_entry_request
              ~description:"Meeting with possible clients" ())
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_create_time_entry _switch () =
@@ -205,36 +205,36 @@ module TestConnectionError = struct
     >>= Api.TimeEntry.create
           (create_time_entry_request
              ~description:"Meeting with possible clients" ())
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_current_time_entry _switch () =
     client
     >>= Api.TimeEntry.current
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_time_entry_details _switch () =
     client
     >>= Api.TimeEntry.stop 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_delete_time_entry _switch () =
     client
     >>= Api.TimeEntry.delete 0
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_list_workspaces _switch () =
     client
     >>= Api.Workspace.list
-    |> map_err Piaf.Error.to_string
-    |> map_err (check string "Returns error" "Connect Error: connection error")
+    |> map_error Piaf.Error.to_string
+    |> map_error (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 end
 
