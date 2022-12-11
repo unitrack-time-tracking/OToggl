@@ -129,7 +129,7 @@ let post
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
 
-let put
+let patch
     (_t : t)
     ?(headers : (string * string) list option)
     ?(body : Body.t option)
@@ -137,7 +137,7 @@ let put
   =
   ignore (headers, body) ;
   match path with
-  | "/api/v9/time_entries/436694100/stop" ->
+  | "/api/v9/workspaces/777/time_entries/436694100/stop" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)

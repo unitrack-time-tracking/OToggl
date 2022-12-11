@@ -119,9 +119,9 @@ let create_time_entry
       time_entry >>= delete_time_entry switch >|= ignore) ;
   time_entry
 
-let stop_time_entry _switch ({id; _} : Types.time_entry) =
+let stop_time_entry _switch ({id; workspace_id ; _} : Types.time_entry) =
   client
-  >>= TimeEntry.stop id
+  >>= TimeEntry.stop workspace_id id
   >|= get_or_failwith
   >>= wait
   >|= fun te ->

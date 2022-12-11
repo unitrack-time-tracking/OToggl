@@ -20,18 +20,16 @@ module F (Client : module type of Piaf.Client) = struct
       let body =
         {time_entry= t} |> string_of_wrapped_time_entry |> Piaf.Body.of_string
       in
-      Client.post client ~body "/api/v8/time_entries/start"
+      Client.post client ~body "/api/v9/time_entries/start"
       >>= Util.status_200_or_error
-      >|= data_time_entry_of_string
-      >|= fun x -> x.data
+      >|= time_entry_of_string
 
-    let stop (tid : tid) (client : Client.t) =
+    let stop (wid : wid) (tid : tid) (client : Client.t) =
       let body = Piaf.Body.empty in
-      "/api/v8/time_entries/" ^ string_of_int tid ^ "/stop"
-      |> Client.put client ~body
+      "/api/v9/workspaces/" ^ Int.to_string wid ^ "/time_entries/" ^ string_of_int tid ^ "/stop"
+      |> Client.patch client ~body
       >>= Util.status_200_or_error
-      >|= data_time_entry_of_string
-      >|= fun x -> x.data
+      >|= time_entry_of_string
 
     let current (client : Client.t) =
       Client.get client "/api/v9/me/time_entries/current"

@@ -69,7 +69,7 @@ module TestNormalBehaviour = struct
 
   let test_stop_time_entry _switch () =
     client
-    >>= Api.TimeEntry.stop 436694100
+    >>= Api.TimeEntry.stop 777 436694100
     >|= check Testables.Toggl.time_entry "Same time entry" time_entry
     |> raise_error
 
@@ -144,7 +144,7 @@ module TestNotFound = struct
 
   let test_stop_time_entry _switch () =
     client
-    >>= Api.TimeEntry.stop 0
+    >>= Api.TimeEntry.stop 777 0
     |> map_error Piaf.Error.to_string
     |> map_error (check string "Says that url is not found" "not_found")
     |> Lwt.map Result.get_error
@@ -179,7 +179,7 @@ module TestConnectionError = struct
 
   let test_stop_time_entry _switch () =
     client
-    >>= Api.TimeEntry.stop 0
+    >>= Api.TimeEntry.stop 777 0
     |> map_error Piaf.Error.to_string
     |> map_error
          (check string "Returns error" "Connect Error: connection error")
