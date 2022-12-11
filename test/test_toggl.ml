@@ -21,13 +21,13 @@ module TestNormalBehaviour = struct
       ~tags:["billed"] ()
 
   let time_entry =
-    Toggl_v.create_time_entry ~id:436694100 ~pid:123 ~wid:777 ~uid:1
-      ~billable:false
+    Toggl_v.create_time_entry ~id:436694100 ~pid:123 ~project_id:123 ~wid:777
+      ~workspace_id:777 ~uid:1 ~user_id:1 ~billable:false
       ~start:(get_datetime "2013-03-05T07:58:58.000Z")
-      ~duration:1200 ~description:"Meeting with possible clients"
+      ~duration:(-1362470338) ~description:"Meeting with possible clients"
       ~tags:["billed"]
       ~at:(get_datetime "2013-03-06T09:15:18+00:00")
-      ()
+      ~duronly:false ()
 
   let projects =
     [
@@ -85,11 +85,11 @@ module TestNormalBehaviour = struct
     >|= check Testables.Toggl.time_entry "Same time entry" time_entry
     |> raise_error
 
-  let test_time_entry_details _switch () =
-    client
-    >>= Api.TimeEntry.details 436694100
-    >|= check Testables.Toggl.time_entry "Same time entry" time_entry
-    |> raise_error
+  (* let test_time_entry_details _switch () = *)
+  (*   client *)
+  (*   >>= Api.TimeEntry.details 436694100 *)
+  (*   >|= check Testables.Toggl.time_entry "Same time entry" time_entry *)
+  (*   |> raise_error *)
 
   let test_delete_time_entry _switch () =
     client
@@ -156,12 +156,12 @@ module TestNotFound = struct
     |> map_error (check string "Says that url is not found" "not_found")
     |> Lwt.map Result.get_error
 
-  let test_time_entry_details _switch () =
-    client
-    >>= Api.TimeEntry.details 0
-    |> map_error Piaf.Error.to_string
-    |> map_error (check string "Says that url is not found" "not_found")
-    |> Lwt.map Result.get_error
+  (* let test_time_entry_details _switch () = *)
+  (*   client *)
+  (*   >>= Api.TimeEntry.details 0 *)
+  (*   |> map_error Piaf.Error.to_string *)
+  (*   |> map_error (check string "Says that url is not found" "not_found") *)
+  (*   |> Lwt.map Result.get_error *)
 
   let test_delete_time_entry _switch () =
     client
@@ -181,14 +181,16 @@ module TestConnectionError = struct
     client
     >>= Api.TimeEntry.stop 0
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_list_projects _switch () =
     client
     >>= Api.Project.list 0
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_start_time_entry _switch () =
@@ -197,7 +199,8 @@ module TestConnectionError = struct
           (create_time_entry_request
              ~description:"Meeting with possible clients" ())
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_create_time_entry _switch () =
@@ -206,35 +209,40 @@ module TestConnectionError = struct
           (create_time_entry_request
              ~description:"Meeting with possible clients" ())
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_current_time_entry _switch () =
     client
     >>= Api.TimeEntry.current
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
-  let test_time_entry_details _switch () =
-    client
-    >>= Api.TimeEntry.stop 0
-    |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
-    |> Lwt.map Result.get_error
+  (* let test_time_entry_details _switch () = *)
+  (*   client *)
+  (*   >>= Api.TimeEntry.details 0 *)
+  (*   |> map_error Piaf.Error.to_string *)
+  (* |> map_error (check string "Returns error" "Connect Error: connection
+     error") *)
+  (* |> Lwt.map Result.get_error *)
 
   let test_delete_time_entry _switch () =
     client
     >>= Api.TimeEntry.delete 0
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 
   let test_list_workspaces _switch () =
     client
     >>= Api.Workspace.list
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Returns error" "Connect Error: connection error")
+    |> map_error
+         (check string "Returns error" "Connect Error: connection error")
     |> Lwt.map Result.get_error
 end
 
@@ -251,8 +259,8 @@ let normal_behaviour_suite =
         test_stop_time_entry;
       test_case "Getting current time entry response is parsed" `Quick
         test_current_time_entry;
-      test_case "Getting specified time entry response is parsed" `Quick
-        test_time_entry_details;
+      (* test_case "Getting specified time entry response is parsed" `Quick *)
+      (*   test_time_entry_details; *)
       test_case "Deleting specified time entry response is parsed" `Quick
         test_delete_time_entry;
       test_case "Getting all time entries without query response is parsed"
@@ -274,8 +282,8 @@ let not_found_suite =
         test_stop_time_entry;
       test_case "Getting all projects response is parsed" `Quick
         test_list_projects;
-      test_case "Getting specified time entry response is parsed" `Quick
-        test_time_entry_details;
+      (* test_case "Getting specified time entry response is parsed" `Quick *)
+      (*   test_time_entry_details; *)
       test_case "Deleting specified time entry response is parsed" `Quick
         test_delete_time_entry;
     ]
@@ -291,8 +299,8 @@ let error_suite =
         test_stop_time_entry;
       test_case "Getting current time entry response returns error" `Quick
         test_current_time_entry;
-      test_case "Getting specified time entry response returns error" `Quick
-        test_time_entry_details;
+      (* test_case "Getting specified time entry response returns error" `Quick *)
+      (*   test_time_entry_details; *)
       test_case "Deleting specified time entry response returns error" `Quick
         test_delete_time_entry;
       test_case "Getting all workspaces response returns error" `Quick

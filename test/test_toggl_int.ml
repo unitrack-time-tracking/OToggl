@@ -141,8 +141,8 @@ let start_time_entry switch ({id; wid; _} : Types.project) =
       time_entry >>= delete_time_entry switch >|= ignore) ;
   time_entry
 
-let get_time_entry _switch (time_entry : Types.time_entry) =
-  client >>= TimeEntry.details time_entry.id >|= get_or_failwith >>= wait
+(* let get_time_entry _switch (time_entry : Types.time_entry) = *)
+(*   client >>= TimeEntry.details time_entry.id >|= get_or_failwith >>= wait *)
 
 let get_current_time_entry _switch =
   client >>= TimeEntry.current >|= get_or_failwith >>= wait
@@ -211,7 +211,7 @@ let test_create_get_delete switch () =
   let* workspace = get_workspace switch in
   let* project = create_run_project switch workspace in
   let* time_entry = create_time_entry switch ~pid:project.id in
-  let* time_entry = get_time_entry switch time_entry in
+  (* let* time_entry = get_time_entry switch time_entry in *)
   let* _ = delete_time_entry switch time_entry in
   return ()
 
@@ -288,8 +288,8 @@ let test_modify_time_entry switch () =
     @@ Alcotest.check Testables.Toggl.time_entry "Expected initial state"
          {
            id= te0.id;
-           wid= 4436316;
-           pid= Some project.id;
+           workspace_id= 4436316;
+           project_id= Some project.id;
            tags= [];
            billable= false;
            start=
@@ -302,8 +302,15 @@ let test_modify_time_entry switch () =
            duration= 3600;
            description= "Test time entry";
            duronly= false;
-           uid= 4179541;
+           user_id= 4179541;
            at= te0.at;
+           server_deleted_at= None;
+           tag_ids= [];
+           task_id= None;
+           tid= None;
+           pid= None;
+           wid= None;
+           uid= None;
          }
          te0
   in
