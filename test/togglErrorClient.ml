@@ -12,7 +12,7 @@ let post
   ignore (headers, body, path) ;
   Lwt_result.fail @@ `Connect_error "connection error"
 
-let put
+let patch
     (_t : t)
     ?(headers : (string * string) list option)
     ?(body : Body.t option)
