@@ -34,10 +34,9 @@ module F (Client : module type of Piaf.Client) = struct
       >|= fun x -> x.data
 
     let current (client : Client.t) =
-      Client.get client "/api/v8/time_entries/current"
+      Client.get client "/api/v9/me/time_entries/current"
       >>= Util.status_200_or_error
-      >|= data_time_entry_of_string
-      >|= fun x -> x.data
+      >|= time_entry_of_string
 
     let details (tid : tid) (client : Client.t) =
       "/api/v8/time_entries/" ^ string_of_int tid
@@ -70,7 +69,7 @@ module F (Client : module type of Piaf.Client) = struct
         | Some date ->
           ("start_date", [Ptime.to_rfc3339 ~tz_offset_s date]) :: query
       in
-      Uri.make ~path:"/api/v8/time_entries" ~query ()
+      Uri.make ~path:"/api/v9/me/time_entries" ~query ()
       |> Uri.to_string
       |> Client.get client
       >>= Util.status_200_or_error

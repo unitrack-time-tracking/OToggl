@@ -1,5 +1,7 @@
 <doc text="Helper types">
 type tid = int
+<doc text="Time entry ID">
+
 type wid = int
 type pid = int
 type uid = int
@@ -8,18 +10,25 @@ type datetime = string wrap <ocaml t="Ptime.t" unwrap="Ptime.to_rfc3339" wrap="f
 <doc text="Response types">
 
 type time_entry = {
-  id: tid;
-  wid: wid;
-  uid: uid;
-  description: string;
   at: datetime;
+  billable: bool;
+  ~description: string;
+  duration: int;
+  duronly: bool;
+  id: tid;
   ?pid: pid option;
+  ?project_id: pid option;
+  ?server_deleted_at: string option;
   start: datetime;
   ?stop: datetime option;
-  duration: int;
+  ~tag_ids: int list;
   ~tags: string list;
-  ~duronly: bool;
-  ~billable: bool
+  ?tid: int option;
+  ?task_id: int option;
+  ?uid: uid option;
+  user_id: uid;
+  ?wid: wid option;
+  workspace_id: wid;
 }
 <doc text="Represents a time enty as will be returned from the Toggl API">
 

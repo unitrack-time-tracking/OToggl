@@ -6,21 +6,24 @@ let client = Obj.magic None
 let time_entry =
   {json|
 {
-  "data": {
-    "id": 436694100,
-    "pid": 123,
-    "wid": 777,
-    "uid": 1,
-    "billable": false,
-    "start": "2013-03-05T07:58:58.000Z",
-    "duration": 1200,
-    "description": "Meeting with possible clients",
-    "created_with": "trackoclock",
-    "tags": [
-      "billed"
-    ],
-    "at": "2013-03-06T09:15:18Z"
-  }
+  "at": "2013-03-06T09:15:18Z",
+  "billable": false,
+  "description": "Meeting with possible clients",
+  "duration": -1362470338,
+  "duronly": false,
+  "id": 436694100,
+  "pid": 123,
+  "project_id": 123,
+  "start": "2013-03-05T07:58:58.000Z",
+  "server_deleted_at": null,
+  "tags": [
+    "billed"
+  ],
+  "task_id": null,
+  "uid": 1,
+  "user_id": 1,
+  "wid": 777,
+  "workspace_id": 777
 }
 |json}
 
@@ -28,19 +31,24 @@ let time_entries =
   {json|
 [
   {
+    "at": "2013-03-06T09:15:18Z",
+    "billable": false,
+    "description": "Meeting with possible clients",
+    "duration": -1362470338,
+    "duronly": false,
     "id": 436694100,
     "pid": 123,
-    "wid": 777,
-    "uid": 1,
-    "billable": false,
+    "project_id": 123,
     "start": "2013-03-05T07:58:58.000Z",
-    "duration": 1200,
-    "description": "Meeting with possible clients",
-    "created_with": "trackoclock",
+    "server_deleted_at": null,
     "tags": [
       "billed"
     ],
-    "at": "2013-03-06T09:15:18Z"
+    "task_id": null,
+    "uid": 1,
+    "user_id": 1,
+    "wid": 777,
+    "workspace_id": 777
   }
 ]
 |json}
@@ -114,9 +122,9 @@ let post
   =
   ignore (headers, body) ;
   match path with
-  | "/api/v8/time_entries" ->
+  | "/api/v9/time_entries" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
-  | "/api/v8/time_entries/start" ->
+  | "/api/v9/time_entries/start" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
@@ -129,7 +137,7 @@ let put
   =
   ignore (headers, body) ;
   match path with
-  | "/api/v8/time_entries/436694100/stop" ->
+  | "/api/v9/time_entries/436694100/stop" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
@@ -137,21 +145,21 @@ let put
 let get (_t : t) ?(headers : (string * string) list option) path =
   ignore headers ;
   match path with
-  | "/api/v8/workspaces/777/projects" ->
+  | "/api/v9/workspaces/777/projects" ->
     Lwt_result.return (Response.of_string `OK ~body:projects)
-  | "/api/v8/time_entries/current" ->
+  | "/api/v9/me/time_entries/current" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
-  | "/api/v8/time_entries/436694100" ->
-    Lwt_result.return (Response.of_string `OK ~body:time_entry)
-  | "/api/v8/time_entries" ->
+  (* | "/api/v9/time_entries/436694100" -> *)
+  (*   Lwt_result.return (Response.of_string `OK ~body:time_entry) *)
+  | "/api/v9/me/time_entries" ->
     Lwt_result.return (Response.of_string `OK ~body:"[]")
-  | "/api/v8/time_entries?start_date=2020-01-01T00:00:00Z&end_date=2020-01-02T00:00:00Z"
+  | "/api/v9/me/time_entries?start_date=2020-01-01T00:00:00Z&end_date=2020-01-02T00:00:00Z"
     ->
     Lwt_result.return (Response.of_string `OK ~body:time_entries)
-  | "/api/v8/time_entries?start_date=4020-01-01T00:00:00Z&end_date=4020-01-02T00:00:00Z"
+  | "/api/v9/me/time_entries?start_date=4020-01-01T00:00:00Z&end_date=4020-01-02T00:00:00Z"
     ->
     Lwt_result.return (Response.of_string `OK ~body:"[]")
-  | "/api/v8/workspaces" ->
+  | "/api/v9/workspaces" ->
     Lwt_result.return (Response.of_string `OK ~body:workspaces)
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
@@ -164,7 +172,7 @@ let delete
   =
   ignore (headers, body) ;
   match path with
-  | "/api/v8/time_entries/436694100" ->
+  | "/api/v9/time_entries/436694100" ->
     Lwt_result.return (Response.of_string `OK ~body:"[436694100]")
   | _ ->
     Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
