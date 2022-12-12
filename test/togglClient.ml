@@ -125,7 +125,8 @@ let post
   | "/api/v9/workspaces/777/time_entries" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
   | url ->
-    Lwt_result.return (Response.of_string ~body:("not_found: " ^ url) `Not_found)
+    Lwt_result.return
+      (Response.of_string ~body:("not_found: " ^ url) `Not_found)
 
 let patch
     (_t : t)
@@ -137,8 +138,9 @@ let patch
   match path with
   | "/api/v9/workspaces/777/time_entries/436694100/stop" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
-  | _ ->
-    Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
+  | url ->
+    Lwt_result.return
+      (Response.of_string ~body:("not_found: " ^ url) `Not_found)
 
 let get (_t : t) ?(headers : (string * string) list option) path =
   ignore headers ;
@@ -159,8 +161,9 @@ let get (_t : t) ?(headers : (string * string) list option) path =
     Lwt_result.return (Response.of_string `OK ~body:"[]")
   | "/api/v9/workspaces" ->
     Lwt_result.return (Response.of_string `OK ~body:workspaces)
-  | _ ->
-    Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
+  | url ->
+    Lwt_result.return
+      (Response.of_string ~body:("not_found: " ^ url) `Not_found)
 
 let delete
     (_t : t)
@@ -170,7 +173,8 @@ let delete
   =
   ignore (headers, body) ;
   match path with
-  | "/api/v9/time_entries/436694100" ->
+  | "/api/v9/workspaces/777/time_entries/436694100" ->
     Lwt_result.return (Response.of_string `OK ~body:"[436694100]")
-  | _ ->
-    Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
+  | url ->
+    Lwt_result.return
+      (Response.of_string ~body:("not_found: " ^ url) `Not_found)

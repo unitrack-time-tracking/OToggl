@@ -85,10 +85,10 @@ let create_run_project
 let get_project _switch ({id; _} : Types.workspace) =
   client >>= Project.list id >|= get_or_failwith >|= List.hd
 
-let delete_time_entry _switch ({id; _} : Types.time_entry) =
+let delete_time_entry _switch ({id; workspace_id; _} : Types.time_entry) =
   print_string @@ "Deleting time entry " ^ Int.to_string id ^ "\n" ;
   client
-  >>= TimeEntry.delete id
+  >>= TimeEntry.delete workspace_id id
   >|= get_or_failwith
   >>= wait
   >|= fun tids ->
@@ -111,8 +111,8 @@ let create_time_entry
   let time_entry =
     client
     >>= TimeEntry.create
-          (Types.create_time_entry_request ~workspace_id ~project_id ~description ?tags ~start ?stop
-             ~duration ?duronly ?billable ())
+          (Types.create_time_entry_request ~workspace_id ~project_id
+             ~description ?tags ~start ?stop ~duration ?duronly ?billable ())
     >|= get_or_failwith
     >>= wait
   in
@@ -211,7 +211,9 @@ let test_start_delete switch () =
 let test_create_get_delete switch () =
   let* workspace = get_workspace switch in
   let* project = create_run_project switch workspace in
-  let* time_entry = create_time_entry switch ~workspace_id:workspace.id ~project_id:project.id in
+  let* time_entry =
+    create_time_entry switch ~workspace_id:workspace.id ~project_id:project.id
+  in
   (* let* time_entry = get_time_entry switch time_entry in *)
   let* _ = delete_time_entry switch time_entry in
   return ()
@@ -283,7 +285,9 @@ let test_create_and_list_end_date_before switch () =
 let test_modify_time_entry switch () =
   let* workspace = get_workspace switch in
   let* project = create_run_project switch workspace in
-  let* te0 = create_time_entry ~workspace_id:workspace.id ~project_id:project.id switch in
+  let* te0 =
+    create_time_entry ~workspace_id:workspace.id ~project_id:project.id switch
+  in
   let* _ =
     return
     @@ Alcotest.check Testables.Toggl.time_entry "Expected initial state"

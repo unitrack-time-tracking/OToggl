@@ -93,7 +93,7 @@ module TestNormalBehaviour = struct
 
   let test_delete_time_entry _switch () =
     client
-    >>= Api.TimeEntry.delete 436694100
+    >>= Api.TimeEntry.delete 777 436694100
     >|= check Alcotest.(list int) "Same workspaces" [436694100]
     |> raise_error
 
@@ -146,14 +146,20 @@ module TestNotFound = struct
     client
     >>= Api.TimeEntry.stop 777 0
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Says that url is not found" "not_found")
+    |> map_error
+         (check string "Says that url is not found"
+            "Error while stopping time entry\n\n\n\
+             not_found: /api/v9/workspaces/777/time_entries/0/stop")
     |> Lwt.map Result.get_error
 
   let test_list_projects _switch () =
     client
     >>= Api.Project.list 0
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Says that url is not found" "not_found")
+    |> map_error
+         (check string "Says that url is not found"
+            "Error while getting listing projects\n\n\n\
+             not_found: /api/v9/workspaces/0/projects")
     |> Lwt.map Result.get_error
 
   (* let test_time_entry_details _switch () = *)
@@ -165,9 +171,12 @@ module TestNotFound = struct
 
   let test_delete_time_entry _switch () =
     client
-    >>= Api.TimeEntry.delete 0
+    >>= Api.TimeEntry.delete 777 0
     |> map_error Piaf.Error.to_string
-    |> map_error (check string "Says that url is not found" "not_found")
+    |> map_error
+         (check string "Says that url is not found"
+            "Error while deleting time entry\n\n\n\
+             not_found: /api/v9/workspaces/777/time_entries/0")
     |> Lwt.map Result.get_error
 end
 
@@ -231,7 +240,7 @@ module TestConnectionError = struct
 
   let test_delete_time_entry _switch () =
     client
-    >>= Api.TimeEntry.delete 0
+    >>= Api.TimeEntry.delete 777 0
     |> map_error Piaf.Error.to_string
     |> map_error
          (check string "Returns error" "Connect Error: connection error")

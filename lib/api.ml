@@ -11,10 +11,10 @@ module F (Client : module type of Piaf.Client) = struct
       let body =
         {time_entry= t} |> string_of_wrapped_time_entry |> Piaf.Body.of_string
       in
-      Client.post client ~body "/api/v8/time_entries"
-      >>= Util.status_200_or_error
-      >|= data_time_entry_of_string
-      >|= fun x -> x.data
+      Client.post client ~body
+        ("/api/v9/workspaces/" ^ Int.to_string t.workspace_id ^ "/time_entries")
+      >>= Util.status_200_or_error "Error while creating time entry"
+      >|= time_entry_of_string
 
     let start (t : time_entry_request) (client : Client.t) =
       let t =
@@ -27,32 +27,38 @@ module F (Client : module type of Piaf.Client) = struct
       let body = string_of_time_entry_request t |> Piaf.Body.of_string in
       Client.post client ~body
         ("/api/v9/workspaces/" ^ Int.to_string t.workspace_id ^ "/time_entries")
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while starting time entry"
       >|= time_entry_of_string
 
     let stop (wid : wid) (tid : tid) (client : Client.t) =
       let body = Piaf.Body.empty in
-      "/api/v9/workspaces/" ^ Int.to_string wid ^ "/time_entries/" ^ string_of_int tid ^ "/stop"
+      "/api/v9/workspaces/"
+      ^ Int.to_string wid
+      ^ "/time_entries/"
+      ^ string_of_int tid
+      ^ "/stop"
       |> Client.patch client ~body
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while stopping time entry"
       >|= time_entry_of_string
 
     let current (client : Client.t) =
       Client.get client "/api/v9/me/time_entries/current"
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while getting current time entry"
       >|= time_entry_of_string
 
-    let details (tid : tid) (client : Client.t) =
-      "/api/v8/time_entries/" ^ string_of_int tid
-      |> Client.get client
-      >>= Util.status_200_or_error
-      >|= data_time_entry_of_string
-      >|= fun x -> x.data
+    (* let details (tid : tid) (client : Client.t) = *)
+    (*   "/api/v9/time_entries/" ^ string_of_int tid *)
+    (*   |> Client.get client *)
+    (*   >>= Util.status_200_or_error "Error while getting time entry details" *)
+    (*   >|= time_entry_of_string *)
 
-    let delete (tid : tid) (client : Client.t) =
-      "/api/v8/time_entries/" ^ string_of_int tid
+    let delete (wid : wid) (tid : tid) (client : Client.t) =
+      "/api/v9/workspaces/"
+      ^ Int.to_string wid
+      ^ "/time_entries/"
+      ^ string_of_int tid
       |> Client.delete client
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while deleting time entry"
       >|= tid_list_of_string
 
     let list ?start_date ?end_date (client : Client.t) =
@@ -76,7 +82,7 @@ module F (Client : module type of Piaf.Client) = struct
       Uri.make ~path:"/api/v9/me/time_entries" ~query ()
       |> Uri.to_string
       |> Client.get client
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while listing time entries"
       >|= time_entry_list_of_string
 
     let update
@@ -105,17 +111,16 @@ module F (Client : module type of Piaf.Client) = struct
         |> string_of_wrapped_time_entry_update_request
         |> Piaf.Body.of_string
       in
-      Client.put client ~body @@ "/api/v8/time_entries/" ^ string_of_int tid
-      >>= Util.status_200_or_error
-      >|= data_time_entry_of_string
-      >|= fun x -> x.data
+      Client.put client ~body @@ "/api/v9/time_entries/" ^ string_of_int tid
+      >>= Util.status_200_or_error "Error while updating time entry"
+      >|= time_entry_of_string
   end
 
   module Workspace = struct
     let list (client : Client.t) =
       let open Lwt_result in
-      Client.get client "/api/v8/workspaces"
-      >>= Util.status_200_or_error
+      Client.get client "/api/v9/workspaces"
+      >>= Util.status_200_or_error "Error while listing workspaces"
       >|= workspace_list_of_string
   end
 
@@ -124,24 +129,24 @@ module F (Client : module type of Piaf.Client) = struct
 
     let list wid (client : Client.t) =
       let open Lwt_result in
-      "/api/v8/workspaces/" ^ string_of_int wid ^ "/projects"
+      "/api/v9/workspaces/" ^ string_of_int wid ^ "/projects"
       |> Client.get client
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while getting listing projects"
       >|= project_list_of_string
 
     let create t (client : Client.t) =
       let body =
         {project= t} |> string_of_wrapped_project_request |> Piaf.Body.of_string
       in
-      Client.post client ~body "/api/v8/projects"
-      >>= Util.status_200_or_error
+      Client.post client ~body "/api/v9/projects"
+      >>= Util.status_200_or_error "Error while creating project"
       >|= data_project_of_string
       >|= fun x -> x.data
 
     let delete pid (client : Client.t) =
-      "/api/v8/projects/" ^ string_of_int pid
+      "/api/v9/projects/" ^ string_of_int pid
       |> Client.delete client
-      >>= Util.status_200_or_error
+      >>= Util.status_200_or_error "Error while deleting project"
       >|= pid_list_of_string
   end
 end
