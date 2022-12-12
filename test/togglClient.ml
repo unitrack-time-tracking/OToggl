@@ -122,12 +122,10 @@ let post
   =
   ignore (headers, body) ;
   match path with
-  | "/api/v9/time_entries" ->
+  | "/api/v9/workspaces/777/time_entries" ->
     Lwt_result.return (Response.of_string `OK ~body:time_entry)
-  | "/api/v9/time_entries/start" ->
-    Lwt_result.return (Response.of_string `OK ~body:time_entry)
-  | _ ->
-    Lwt_result.return (Response.of_string ~body:"not_found" `Not_found)
+  | url ->
+    Lwt_result.return (Response.of_string ~body:("not_found: " ^ url) `Not_found)
 
 let patch
     (_t : t)

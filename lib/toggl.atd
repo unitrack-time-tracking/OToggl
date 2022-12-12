@@ -83,16 +83,26 @@ type data_project = {data: project}
 <doc text="Request types">
 
 type time_entry_request = {
-  description: string;
-  ?wid: int option;
-  ?pid: int option;
-  ?start: datetime option;
-  ?stop: datetime nullable option;
-  ~duration: int;
+  ?billable: bool option;
   created_with: string;
-  ~tags: string list;
+  ~description: string;
+  ?duration: int option;
   ~duronly: bool;
-  ~billable: bool
+  ?pid: pid option;
+  ?project_id: pid option;
+  ?server_deleted_at: string option;
+  start: datetime;
+  ?start_date: string option;
+  ?stop: datetime option;
+  ?tag_action: string option;
+  ~tag_ids: int list;
+  ~tags: string list;
+  ?tid: int option;
+  ?task_id: int option;
+  ?uid: uid option;
+  ?user_id: uid option;
+  ?wid: wid option;
+  workspace_id: wid;
 } <json keep_nulls> <doc text="Represents a time entry as we send to Toggl when starting or creating one">
 
 type time_entry_update_request = {

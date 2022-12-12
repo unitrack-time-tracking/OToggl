@@ -16,11 +16,17 @@ module F (Client : module type of Piaf.Client) = struct
       >|= data_time_entry_of_string
       >|= fun x -> x.data
 
-    let start t (client : Client.t) =
-      let body =
-        {time_entry= t} |> string_of_wrapped_time_entry |> Piaf.Body.of_string
+    let start (t : time_entry_request) (client : Client.t) =
+      let t =
+        {
+          t with
+          stop= None;
+          duration= Some (-Int.of_float (Ptime.to_float_s t.start));
+        }
       in
-      Client.post client ~body "/api/v9/time_entries/start"
+      let body = string_of_time_entry_request t |> Piaf.Body.of_string in
+      Client.post client ~body
+        ("/api/v9/workspaces/" ^ Int.to_string t.workspace_id ^ "/time_entries")
       >>= Util.status_200_or_error
       >|= time_entry_of_string
 

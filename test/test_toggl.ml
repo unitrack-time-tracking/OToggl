@@ -15,7 +15,7 @@ module TestNormalBehaviour = struct
   let client = Lwt_result.return TogglClient.client
 
   let time_entry_request =
-    create_time_entry_request ~pid:123 ~wid:777 ~billable:false
+    create_time_entry_request ~project_id:123 ~workspace_id:777 ~billable:false
       ~start:(get_datetime "2013-03-05T07:58:58.000Z")
       ~duration:1200 ~description:"Meeting with possible clients"
       ~tags:["billed"] ()
@@ -196,7 +196,7 @@ module TestConnectionError = struct
   let test_start_time_entry _switch () =
     client
     >>= Api.TimeEntry.start
-          (create_time_entry_request
+          (create_time_entry_request ~workspace_id:777
              ~description:"Meeting with possible clients" ())
     |> map_error Piaf.Error.to_string
     |> map_error
@@ -206,7 +206,7 @@ module TestConnectionError = struct
   let test_create_time_entry _switch () =
     client
     >>= Api.TimeEntry.create
-          (create_time_entry_request
+          (create_time_entry_request ~workspace_id:777
              ~description:"Meeting with possible clients" ())
     |> map_error Piaf.Error.to_string
     |> map_error
