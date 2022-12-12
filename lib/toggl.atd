@@ -90,7 +90,6 @@ type time_entry_request = {
   ~duronly: bool;
   ?pid: pid option;
   ?project_id: pid option;
-  ?server_deleted_at: string option;
   start: datetime;
   ?start_date: string option;
   ?stop: datetime option;
