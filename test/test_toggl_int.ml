@@ -97,7 +97,8 @@ let delete_time_entry _switch ({id; _} : Types.time_entry) =
   tids
 
 let create_time_entry
-    ~pid
+    ~workspace_id
+    ~project_id
     ?(description = "Test time entry")
     ?(start = Types.datetime_of_string "\"2020-01-01T00:00:00Z\"")
     ?stop
@@ -110,7 +111,7 @@ let create_time_entry
   let time_entry =
     client
     >>= TimeEntry.create
-          (Types.create_time_entry_request ~pid ~description ?tags ~start ?stop
+          (Types.create_time_entry_request ~workspace_id ~project_id ~description ?tags ~start ?stop
              ~duration ?duronly ?billable ())
     >|= get_or_failwith
     >>= wait
@@ -119,7 +120,7 @@ let create_time_entry
       time_entry >>= delete_time_entry switch >|= ignore) ;
   time_entry
 
-let stop_time_entry _switch ({id; workspace_id ; _} : Types.time_entry) =
+let stop_time_entry _switch ({id; workspace_id; _} : Types.time_entry) =
   client
   >>= TimeEntry.stop workspace_id id
   >|= get_or_failwith
@@ -132,7 +133,7 @@ let start_time_entry switch ({id; wid; _} : Types.project) =
   let time_entry =
     client
     >>= TimeEntry.start
-          (Types.create_time_entry_request ~wid ~pid:id
+          (Types.create_time_entry_request ~workspace_id:wid ~project_id:id
              ~description:"Test time entry" ())
     >|= get_or_failwith
     >>= wait
@@ -210,7 +211,7 @@ let test_start_delete switch () =
 let test_create_get_delete switch () =
   let* workspace = get_workspace switch in
   let* project = create_run_project switch workspace in
-  let* time_entry = create_time_entry switch ~pid:project.id in
+  let* time_entry = create_time_entry switch ~workspace_id:workspace.id ~project_id:project.id in
   (* let* time_entry = get_time_entry switch time_entry in *)
   let* _ = delete_time_entry switch time_entry in
   return ()
@@ -282,7 +283,7 @@ let test_create_and_list_end_date_before switch () =
 let test_modify_time_entry switch () =
   let* workspace = get_workspace switch in
   let* project = create_run_project switch workspace in
-  let* te0 = create_time_entry ~pid:project.id switch in
+  let* te0 = create_time_entry ~workspace_id:workspace.id ~project_id:project.id switch in
   let* _ =
     return
     @@ Alcotest.check Testables.Toggl.time_entry "Expected initial state"
